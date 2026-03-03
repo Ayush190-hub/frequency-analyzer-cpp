@@ -3,10 +3,11 @@
 #include <cctype>
 #include <sstream>
 #include <vector>
-#include <unordered_map>
+#include <algorithm>
 
 using namespace std;
 
+// Preprocess Text (remove punctuation, lowercase everything)
 string preprocessText(string text) {
     string cleaned = "";
 
@@ -19,6 +20,7 @@ string preprocessText(string text) {
     return cleaned;
 }
 
+// Split Text into Words
 vector<string> splitWords(string text) {
     vector<string> words;
     stringstream ss(text);
@@ -31,24 +33,40 @@ vector<string> splitWords(string text) {
     return words;
 }
 
-unordered_map<string, int> countFrequency(const vector<string>& words) {
-    unordered_map<string, int> freq;
+// Count Frequency using VECTOR instead of unordered_map
+vector<pair<string, int>> countFrequency(const vector<string>& words) {
+    vector<pair<string, int>> freq;
 
     for (const string& word : words) {
-        freq[word]++;
+        bool found = false;
+
+        // Check if word already exists
+        for (auto& entry : freq) {
+            if (entry.first == word) {
+                entry.second++;
+                found = true;
+                break;
+            }
+        }
+
+        // If not found, add new entry
+        if (!found) {
+            freq.push_back({word, 1});
+        }
     }
 
     return freq;
 }
 
 int main() {
+
     cout << "===== Frequency Analyzer Project =====\n";
     cout << "Enter text (type EXIT on a new line to stop):\n\n";
 
     string line;
     string fullText;
 
-    // 1️⃣ Collect Input
+    // Collect Input
     while (true) {
         getline(cin, line);
 
@@ -59,28 +77,35 @@ int main() {
         fullText += line + " ";
     }
 
-    // 2️⃣ Print Raw Input
+    // Print Raw Input
     cout << "\n----- Raw Input Collected -----\n";
     cout << fullText << endl;
 
-    // 3️⃣ Preprocess Text
+    // Preprocess Text
     string cleanedText = preprocessText(fullText);
 
     cout << "\n----- Cleaned Text -----\n";
     cout << cleanedText << endl;
 
-    // 4️⃣ Split Words
+    // Split Words
     vector<string> words = splitWords(cleanedText);
 
-    // 5️⃣ Print Words
     cout << "\n----- Words Extracted -----\n";
     for (const string &w : words) {
         cout << w << endl;
     }
 
-    unordered_map<string, int> frequency = countFrequency(words);
+    // Count Frequency using vector
+    vector<pair<string, int>> frequency = countFrequency(words);
 
-    cout << "\n----- Word Frequencies (unsorted) -----\n";
+    // Sort by frequency (Descending)
+    sort(frequency.begin(), frequency.end(),
+         [](const pair<string, int>& a, const pair<string, int>& b) {
+             return a.second > b.second;
+         });
+
+    // Print Sorted Frequencies
+    cout << "\n----- Word Frequencies (Sorted by Frequency Descending) -----\n";
 
     for (const auto& entry : frequency) {
         cout << entry.first << " : " << entry.second << endl;
