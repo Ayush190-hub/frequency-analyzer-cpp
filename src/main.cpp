@@ -58,6 +58,13 @@ vector<pair<string, int>> countFrequency(const vector<string>& words) {
     return freq;
 }
 
+void printWords(const vector<string>& words) {
+    cout << "\n----- Word Extracted -----\n";
+    for (const string& w : words) {
+        cout << w << endl;
+    }
+}
+
 int main() {
 
     cout << "===== Frequency Analyzer Project =====\n";
