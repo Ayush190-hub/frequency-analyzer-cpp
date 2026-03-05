@@ -65,6 +65,14 @@ void printWords(const vector<string>& words) {
     }
 }
 
+void printFrequencies(const vector<pair<string,int>>& freqVector) {
+    cout << "\n----- Word Frequencies (Sorted) -----\n";
+
+    for (const auto& entry : freqVector) {
+        cout << entry.first << " : " << entry.second << endl;
+    }
+}
+
 int main() {
 
     cout << "===== Frequency Analyzer Project =====\n";
