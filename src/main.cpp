@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <unordered_map>
 
 using namespace std;
 
@@ -71,6 +72,18 @@ void printFrequencies(const vector<pair<string,int>>& freqVector) {
     for (const auto& entry : freqVector) {
         cout << entry.first << " : " << entry.second << endl;
     }
+}
+
+vector<pair<string, int>> sortFrequencies(unordered_map<string, int>& frequency) {
+
+    vector<pair<string, int>> freqVector(frequency.begin(), frequency.end());
+
+    sort(freqVector.begin(), freqVector.end(),
+    [] (const pair<string, int>& a, const pair<string, int>& b) {
+        return a.second > b.second;
+    });
+
+    return freqVector;
 }
 
 int main() {
