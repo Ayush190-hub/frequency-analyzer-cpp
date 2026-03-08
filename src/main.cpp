@@ -11,13 +11,11 @@ using namespace std;
 // Preprocess Text (remove punctuation, lowercase everything)
 string preprocessText(string text) {
     string cleaned = "";
-
     for (char ch : text) {
         if (isalpha(ch) || isspace(ch)) {
             cleaned += tolower(ch);
         }
     }
-
     return cleaned;
 }
 
@@ -26,68 +24,46 @@ vector<string> splitWords(string text) {
     vector<string> words;
     stringstream ss(text);
     string word;
-
     while (ss >> word) {
         words.push_back(word);
     }
-
     return words;
 }
 
-// Count Frequency using VECTOR instead of unordered_map
-vector<pair<string, int>> countFrequency(const vector<string>& words) {
-    vector<pair<string, int>> freq;
-
+// Count Frequency using unordered_map
+unordered_map<string, int> countFrequency(const vector<string>& words) {
+    unordered_map<string, int> freq;
     for (const string& word : words) {
-        bool found = false;
-
-        // Check if word already exists
-        for (auto& entry : freq) {
-            if (entry.first == word) {
-                entry.second++;
-                found = true;
-                break;
-            }
-        }
-
-        // If not found, add new entry
-        if (!found) {
-            freq.push_back({word, 1});
-        }
+        freq[word]++;  // automatically handles new keys
     }
-
     return freq;
 }
 
+// Sort frequencies descending
+vector<pair<string, int>> sortFrequencies(unordered_map<string, int>& frequency) {
+    vector<pair<string, int>> freqVector(frequency.begin(), frequency.end());
+    sort(freqVector.begin(), freqVector.end(),
+        [](const pair<string, int>& a, const pair<string, int>& b) {
+            return a.second > b.second;
+        });
+    return freqVector;
+}
+
 void printWords(const vector<string>& words) {
-    cout << "\n----- Word Extracted -----\n";
+    cout << "\n----- Words Extracted -----\n";
     for (const string& w : words) {
         cout << w << endl;
     }
 }
 
-void printFrequencies(const vector<pair<string,int>>& freqVector) {
-    cout << "\n----- Word Frequencies (Sorted) -----\n";
-
+void printFrequencies(const vector<pair<string, int>>& freqVector) {
+    cout << "\n----- Word Frequencies (Sorted by Frequency) -----\n";
     for (const auto& entry : freqVector) {
         cout << entry.first << " : " << entry.second << endl;
     }
 }
 
-vector<pair<string, int>> sortFrequencies(unordered_map<string, int>& frequency) {
-
-    vector<pair<string, int>> freqVector(frequency.begin(), frequency.end());
-
-    sort(freqVector.begin(), freqVector.end(),
-    [] (const pair<string, int>& a, const pair<string, int>& b) {
-        return a.second > b.second;
-    });
-
-    return freqVector;
-}
-
 int main() {
-
     cout << "===== Frequency Analyzer Project =====\n";
     cout << "Enter text (type EXIT on a new line to stop):\n\n";
 
@@ -97,11 +73,9 @@ int main() {
     // Collect Input
     while (true) {
         getline(cin, line);
-
         if (line == "EXIT") {
             break;
         }
-
         fullText += line + " ";
     }
 
@@ -111,33 +85,21 @@ int main() {
 
     // Preprocess Text
     string cleanedText = preprocessText(fullText);
-
     cout << "\n----- Cleaned Text -----\n";
     cout << cleanedText << endl;
 
-    // Split Words
+    // Split into Words
     vector<string> words = splitWords(cleanedText);
+    printWords(words);
 
-    cout << "\n----- Words Extracted -----\n";
-    for (const string &w : words) {
-        cout << w << endl;
-    }
+    // Count Frequency
+    unordered_map<string, int> frequency = countFrequency(words);
 
-    // Count Frequency using vector
-    vector<pair<string, int>> frequency = countFrequency(words);
+    // Sort Frequencies
+    vector<pair<string, int>> sortedFreq = sortFrequencies(frequency);
 
-    // Sort by frequency (Descending)
-    sort(frequency.begin(), frequency.end(),
-         [](const pair<string, int>& a, const pair<string, int>& b) {
-             return a.second > b.second;
-         });
-
-    // Print Sorted Frequencies
-    cout << "\n----- Word Frequencies (Sorted by Frequency Descending) -----\n";
-
-    for (const auto& entry : frequency) {
-        cout << entry.first << " : " << entry.second << endl;
-    }
+    // Print Frequencies
+    printFrequencies(sortedFreq);
 
     return 0;
 }
