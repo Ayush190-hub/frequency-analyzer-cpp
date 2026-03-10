@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <fstream>
 
 using namespace std;
 
@@ -134,6 +135,58 @@ void showStatistics(const vector<string>& words,
     cout << "Average Word Length : " << avgLength << endl;
 }
 
+void exportReport(const vector<string>& words,
+                  const unordered_map<string,int>& frequency,
+                  const vector<pair<string,int>>& sortedFreq) {
+
+    ofstream file("analysis_report.txt");
+
+    if (!file) {
+        cout << "Error creating report file.\n";
+        return;
+    }
+
+    int totalWords = words.size();
+    int uniqueWords = frequency.size();
+
+    // Find most frequent word
+    string mostWord;
+    int maxCount = 0;
+
+    for (const auto& entry : frequency) {
+        if (entry.second > maxCount) {
+            maxCount = entry.second;
+            mostWord = entry.first;
+        }
+    }
+
+    int totalLength = 0;
+    for (const string& w : words) {
+        totalLength += w.length();
+    }
+
+    double avgLength = totalWords ? (double)totalLength / totalWords : 0;
+
+    file << "Frequency Analyzer Report\n";
+    file << "=========================\n\n";
+
+    file << "Total Words: " << totalWords << "\n";
+    file << "Unique Words: " << uniqueWords << "\n";
+    file << "Most Frequent Word: " << mostWord
+         << " (" << maxCount << " times)\n";
+    file << "Average Word Length: " << avgLength << "\n\n";
+
+    file << "Word Frequencies\n";
+    file << "----------------\n";
+
+    for (const auto& entry : sortedFreq) {
+        file << entry.first << " : " << entry.second << "\n";
+    }
+
+    file.close();
+
+    cout << "\nReport exported to analysis_report.txt\n";
+}
 
 int main() {
 
@@ -188,6 +241,8 @@ int main() {
 
     // Print sorted frequencies
     printFrequencies(sortedFreq);
+
+    exportReport(words, frequency, sortedFreq);
 
 
     return 0;

@@ -1,0 +1,10 @@
+Frequency Analyzer Report
+=========================
+
+Total Words: 0
+Unique Words: 0
+Most Frequent Word:  (0 times)
+Average Word Length: 0
+
+Word Frequencies
+----------------
