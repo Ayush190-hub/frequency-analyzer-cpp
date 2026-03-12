@@ -5,92 +5,63 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <unordered_set>
 #include <fstream>
 
 using namespace std;
 
+unordered_set<string> stopWords = {
+    "the","and","is","to","of","in","a"
+};
 
-// Preprocess Text (remove punctuation, lowercase everything)
-string preprocessText(string text) {
-
-    string cleaned = "";
+string preprocessText(const string& text) {
+    string cleaned;
 
     for (char ch : text) {
-        if (isalpha(ch) || isspace(ch)) {
+        if (isalpha(ch) || isspace(ch))
             cleaned += tolower(ch);
-        }
     }
 
     return cleaned;
 }
 
-
-// Split text into words
-vector<string> splitWords(string text) {
+vector<string> splitWords(const string& text) {
 
     vector<string> words;
-
     stringstream ss(text);
     string word;
 
-    while (ss >> word) {
+    while (ss >> word)
         words.push_back(word);
-    }
 
     return words;
 }
 
-
-// Count word frequency
 unordered_map<string,int> countFrequency(const vector<string>& words) {
 
     unordered_map<string,int> freq;
 
     for (const string& word : words) {
-        freq[word]++;
+
+        if (stopWords.find(word) == stopWords.end())
+            freq[word]++;
     }
 
     return freq;
 }
 
-
-// Sort frequencies descending
 vector<pair<string,int>> sortFrequencies(const unordered_map<string,int>& frequency) {
 
-    vector<pair<string,int>> freqVector(frequency.begin(), frequency.end());
+    vector<pair<string,int>> vec(frequency.begin(), frequency.end());
 
-    sort(freqVector.begin(), freqVector.end(),
-         [](const pair<string,int>& a, const pair<string,int>& b) {
-             return a.second > b.second;
+    sort(vec.begin(), vec.end(),
+         [](const pair<string,int>& a,const pair<string,int>& b){
+            return a.second > b.second;
          });
 
-    return freqVector;
+    return vec;
 }
 
-
-// Print extracted words
-void printWords(const vector<string>& words) {
-
-    cout << "\n----- Words Extracted -----\n";
-
-    for (const string& w : words) {
-        cout << w << endl;
-    }
-}
-
-
-// Print frequencies
-void printFrequencies(const vector<pair<string,int>>& freqVector) {
-
-    cout << "\n----- Word Frequencies (Sorted) -----\n";
-
-    for (const auto& entry : freqVector) {
-        cout << entry.first << " : " << entry.second << endl;
-    }
-}
-
-
-// Show statistics
 void showStatistics(const vector<string>& words,
                     const unordered_map<string,int>& frequency) {
 
@@ -102,148 +73,137 @@ void showStatistics(const vector<string>& words,
     cout << "Total Words : " << totalWords << endl;
     cout << "Unique Words : " << uniqueWords << endl;
 
-    if (totalWords == 0) {
-        cout << "No words available for statistics.\n";
+    if(totalWords == 0)
         return;
-    }
 
-    // Most frequent word
     string mostWord;
     int maxCount = 0;
 
-    for (const auto& entry : frequency) {
+    for(const auto& entry : frequency){
 
-        if (entry.second > maxCount) {
+        if(entry.second > maxCount){
             maxCount = entry.second;
             mostWord = entry.first;
         }
     }
 
-    cout << "Most Frequent Word : "
-         << mostWord << " (" << maxCount << " times)" << endl;
+    cout<<"Most Frequent Word : "<<mostWord<<" ("<<maxCount<<" times)\n";
 
-
-    // Average word length
     int totalLength = 0;
 
-    for (const string& w : words) {
+    for(const string& w : words)
         totalLength += w.length();
-    }
 
-    double avgLength = (double) totalLength / totalWords;
+    cout<<"Average Word Length : "
+        <<(double)totalLength/totalWords<<endl;
+}
 
-    cout << "Average Word Length : " << avgLength << endl;
+void showWordLengthDistribution(const vector<string>& words){
+
+    unordered_map<int,int> lengthFreq;
+
+    for(const string& w : words)
+        lengthFreq[w.length()]++;
+
+    cout<<"\n----- Word Length Distribution -----\n";
+
+    for(const auto& entry : lengthFreq)
+        cout<<"Length "<<entry.first<<" : "<<entry.second<<" words\n";
+}
+
+void printFrequencies(const vector<pair<string,int>>& sortedFreq){
+
+    cout<<"\n----- Word Frequencies -----\n";
+
+    for(const auto& entry : sortedFreq)
+        cout<<entry.first<<" : "<<entry.second<<endl;
 }
 
 void exportReport(const vector<string>& words,
                   const unordered_map<string,int>& frequency,
-                  const vector<pair<string,int>>& sortedFreq) {
+                  const vector<pair<string,int>>& sortedFreq){
 
     ofstream file("analysis_report.txt");
 
-    if (!file) {
-        cout << "Error creating report file.\n";
+    if(!file){
+        cout<<"Error creating report file\n";
         return;
     }
 
     int totalWords = words.size();
     int uniqueWords = frequency.size();
 
-    // Find most frequent word
-    string mostWord;
-    int maxCount = 0;
+    file<<"Frequency Analyzer Report\n";
+    file<<"=========================\n\n";
 
-    for (const auto& entry : frequency) {
-        if (entry.second > maxCount) {
-            maxCount = entry.second;
-            mostWord = entry.first;
-        }
-    }
+    file<<"Total Words: "<<totalWords<<"\n";
+    file<<"Unique Words: "<<uniqueWords<<"\n\n";
 
-    int totalLength = 0;
-    for (const string& w : words) {
-        totalLength += w.length();
-    }
+    file<<"Word Frequencies\n";
+    file<<"----------------\n";
 
-    double avgLength = totalWords ? (double)totalLength / totalWords : 0;
-
-    file << "Frequency Analyzer Report\n";
-    file << "=========================\n\n";
-
-    file << "Total Words: " << totalWords << "\n";
-    file << "Unique Words: " << uniqueWords << "\n";
-    file << "Most Frequent Word: " << mostWord
-         << " (" << maxCount << " times)\n";
-    file << "Average Word Length: " << avgLength << "\n\n";
-
-    file << "Word Frequencies\n";
-    file << "----------------\n";
-
-    for (const auto& entry : sortedFreq) {
-        file << entry.first << " : " << entry.second << "\n";
-    }
+    for(const auto& entry : sortedFreq)
+        file<<entry.first<<" : "<<entry.second<<"\n";
 
     file.close();
 
-    cout << "\nReport exported to analysis_report.txt\n";
+    cout<<"\nReport exported to analysis_report.txt\n";
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 
-    cout << "===== Frequency Analyzer Project =====\n";
-    cout << "Enter text (type EXIT on a new line to stop):\n\n";
+    cout<<"===== Frequency Analyzer =====\n";
 
-    string line;
     string fullText;
 
+    if(argc > 1){
 
-    // Collect input
-    while (true) {
+        ifstream file(argv[1]);
 
-        getline(cin, line);
-
-        if (line == "EXIT") {
-            break;
+        if(!file){
+            cout<<"Could not open file.\n";
+            return 1;
         }
 
-        fullText += line + " ";
+        string line;
+
+        while(getline(file,line))
+            fullText += line + " ";
+
+    }else{
+
+        cout<<"Enter text (type EXIT to stop)\n";
+
+        string line;
+
+        while(true){
+
+            getline(cin,line);
+
+            if(line == "EXIT")
+                break;
+
+            fullText += line + " ";
+        }
     }
 
+    cout<<"\n----- Raw Input -----\n"<<fullText<<endl;
 
-    cout << "\n----- Raw Input Collected -----\n";
-    cout << fullText << endl;
-
-
-    // Preprocess
     string cleanedText = preprocessText(fullText);
 
-    cout << "\n----- Cleaned Text -----\n";
-    cout << cleanedText << endl;
-
-
-    // Split words
     vector<string> words = splitWords(cleanedText);
 
-    printWords(words);
-
-
-    // Count frequency
     unordered_map<string,int> frequency = countFrequency(words);
 
+    showStatistics(words,frequency);
 
-    // Show statistics
-    showStatistics(words, frequency);
+    showWordLengthDistribution(words);
 
-
-    // Sort frequencies
     vector<pair<string,int>> sortedFreq = sortFrequencies(frequency);
 
-
-    // Print sorted frequencies
     printFrequencies(sortedFreq);
 
-    exportReport(words, frequency, sortedFreq);
-
+    exportReport(words,frequency,sortedFreq);
 
     return 0;
 }
